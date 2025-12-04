@@ -44,7 +44,7 @@ export function LoginForm({ className, ...props }) {
     setAuthError("");
 
     try {
-      const response = await fetch( process.env.DB_HOST ||"http://localhost:5000/api/auth/login", {
+      const response = await fetch( process.env.REACT_APP_API_URL || 'http://localhost:5000' , {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
