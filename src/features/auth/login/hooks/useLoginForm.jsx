@@ -13,6 +13,8 @@
 //     // const email = e.email; // ambil data
 //     // const _password = e.password;
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 //     // Handle form submission here
 //     // In production, you would typically send this data to an API
 //     // Example: await api.login({ email, password: _password });
@@ -26,8 +28,6 @@
 //   };
 //
 import { useFormSchema } from "@/features/auth/login/form/login";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
 
 export const useLoginForm = () => {
   const form = useForm({
