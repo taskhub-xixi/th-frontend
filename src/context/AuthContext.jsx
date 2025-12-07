@@ -9,26 +9,79 @@ export function AuthProvider({ children }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Cek apakah ada user di localStorage saat component mount
+    // Only access localStorage in browser
+    if (typeof window === "undefined") {
+      setIsLoading(false);
+      return;
+    }
+
+    // Check if user exists in localStorage
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       try {
-        setUser(JSON.parse(storedUser));
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
       } catch (error) {
-        console.error("Error parsing stored user:", error);
+        console.error("Failed to parse user from localStorage:", error);
         localStorage.removeItem("user");
       }
     }
+
     setIsLoading(false);
   }, []);
 
+  /**
+   * Logout function
+   * Clear user state dan localStorage
+   * Cookie akan di-clear oleh backend
+   */
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("user");
+
+    // Clear user data dari localStorage
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("user");
+    }
+  };
+
+  /**
+   * Login function
+   * Save user data (tapi BUKAN token!)
+   * Token ada di httpOnly cookie, browser yang manage
+   */
+  const login = (userData) => {
+    setUser(userData);
+
+    // Save user data untuk UX (profile, name, etc)
+    if (typeof window !== "undefined") {
+      localStorage.setItem("user", JSON.stringify(userData));
+    }
+  };
+
+  /**
+   * Update user function
+   * Untuk update profile, settings, etc
+   */
+  const updateUser = (updates) => {
+    const updatedUser = { ...user, ...updates };
+    setUser(updatedUser);
+
+    if (typeof window !== "undefined") {
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, isLoading, logout }}>
+    <AuthContext.Provider
+      value={{
+        isLoading,
+        login,
+        logout,
+        setUser,
+        updateUser,
+        user,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

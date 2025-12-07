@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -21,24 +22,31 @@ export function SignupForm({ className, ...props }) {
 
   // resolver zodResolver
   const { formState, register, handleSubmit } = useForm({
-    resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
       email: "",
+      name: "",
       password: "",
       repeatPassword: "",
     },
+    resolver: zodResolver(formSchema),
   });
 
   const signupUser = async (formData) => {
     setIsLoading(true);
     try {
       await apiClient.post("api/auth/register", formData);
+      const { csrfToken } = response.data;
+      if (csrfToken) {
+        storeCSRFToken(csrfToken);
+      }
+
+      toast.success("Berhasil daftar");
+      router.push("/login");
       toast.success("Berhasil daftar");
       router.push("/login");
     } catch (error) {
       const status = error.response?.status;
-      const message = error.response?.data.message;
+      const message = error.response?.data?.message;
       if (status === 400) {
         toast.error(` Error : ${message}`);
       }

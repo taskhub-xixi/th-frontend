@@ -1,0 +1,62 @@
+{
+  "languages": {
+    "CSS": {
+      "format_on_save": "on",
+      "formatter": "language_server"
+    },
+    "JavaScript": {
+      "code_actions_on_format": {
+        "source.fixAll.biome": true,
+        "source.useSortedKeys.biome": true
+      },
+      "format_on_save": "on",
+      "formatter": "language_server"
+    },
+    "JSON": {
+      "code_actions_on_format": {
+        "source.useSortedKeys.biome": true
+      },
+      "format_on_save": "on",
+      "formatter": "language_server"
+    },
+    "JSONC": {
+      "code_actions_on_format": {
+        "source.useSortedKeys.biome": true
+      },
+      "format_on_save": "on",
+      "formatter": "language_server"
+    },
+    "JSX": {
+      "code_actions_on_format": {
+        "source.fixAll.biome": true,
+        "source.useSortedKeys.biome": true
+      },
+      "format_on_save": "on",
+      "formatter": "language_server"
+    },
+    "TSX": {
+      "code_actions_on_format": {
+        "source.fixAll.biome": true,
+        "source.useSortedKeys.biome": true
+      },
+      "format_on_save": "on",
+      "formatter": "language_server"
+    },
+    "TypeScript": {
+      "code_actions_on_format": {
+        "source.fixAll.biome": true,
+        "source.useSortedKeys.biome": true
+      },
+      "format_on_save": "on",
+      "formatter": "language_server"
+    }
+  },
+  "lsp": {
+    "biome": {
+      "binary": {
+        "arguments": ["lsp-proxy"],
+        "path": "node_modules/.bin/biome"
+      }
+    }
+  }
+}

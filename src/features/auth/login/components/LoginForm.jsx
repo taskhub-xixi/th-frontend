@@ -6,37 +6,31 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/context/AuthContext";
 import { formSchemaLogin } from "@/features/auth/login/form/login";
 import apiClient from "@/lib/axios";
 import { cn } from "@/lib/utils";
+import { storeCSRFToken } from "@/lib/csrf";
 
 export function LoginForm({ className, ...props }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [authError, setAuthError] = useState("");
+  const { login } = useAuth();
 
   const { register, handleSubmit, formState } = useForm({
-    resolver: zodResolver(formSchemaLogin),
     defaultValues: {
       email: "",
       password: "",
     },
+    resolver: zodResolver(formSchemaLogin),
   });
 
   const onSubmit = async (data) => {
@@ -44,32 +38,51 @@ export function LoginForm({ className, ...props }) {
     setAuthError("");
 
     try {
-      const response = await apiClient.post("/auth/login", formData);
-      // const response = await fetch("http://localhost:5000/api/auth/login", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   credentials: "include",
-      //   body: JSON.stringify(data),
-      // });
+      // Call login API
+      const response = await apiClient.post("api/auth/login", data);
 
-      // const result = await response.json();
+      // Extract user and CSRF token from response
+      const { user, csrfToken } = response.data;
 
-      // console.log(result.message);
+      // Save CSRF token untuk request selanjutnya
+      if (csrfToken) {
+        storeCSRFToken(csrfToken);
+      }
 
-      // if (!response.ok) {
-      //   setAuthError(result.message || "Login failed");
-      //   return;
-      // }
+      // Update AuthContext dengan user data
+      // NO token storage! Cookie dihandle otomatis oleh browser
+      if (user) {
+        login(user);
+      }
 
-      // Login berhasil
-      localStorage.setItem("user", JSON.stringify(result.user));
+      toast.success("Login berhasil");
+
+      // Redirect to dashboard
       router.push("/dashboard");
     } catch (error) {
-      console.error("Login error:", error.message);
-      setAuthError("Masalah server");
-      // console.log(authError);
+      // Better error handling
+      const status = error.response?.status;
+      const message = error.response?.data?.message || "Terjadi kesalahan saat login";
+
+      if (status === 401) {
+        setAuthError("Email atau password salah");
+        toast.error("Email atau password salah");
+      } else if (status === 400) {
+        setAuthError(message);
+        toast.error(message);
+      } else if (status === 429) {
+        setAuthError("Terlalu banyak percobaan login. Coba lagi nanti.");
+        toast.error("Rate limit exceeded");
+      } else if (status >= 500) {
+        setAuthError("Server error, coba lagi nanti");
+        toast.error("Server error");
+      } else if (error.response) {
+        setAuthError(message);
+        toast.error(message);
+      } else {
+        setAuthError("Tidak dapat terhubung ke server");
+        toast.error("Periksa koneksi internet Anda");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -94,7 +107,7 @@ export function LoginForm({ className, ...props }) {
             <FieldGroup>
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
-                <Input type="email" {...register("email")} />
+                <Input autoComplete="email" id="email" type="email" {...register("email")} />
                 <CardDescription className="text-red-500">
                   {formState.errors.email?.message}
                 </CardDescription>
@@ -102,14 +115,16 @@ export function LoginForm({ className, ...props }) {
               <Field>
                 <div className="flex items-center">
                   <FieldLabel htmlFor="password">Password</FieldLabel>
-                  <a
-                    className="ml-auto text-sm underline-offset-4 hover:underline"
-                    href="#"
-                  >
+                  <a className="ml-auto text-sm underline-offset-4 hover:underline" href="#">
                     Forgot your password?
                   </a>
                 </div>
-                <Input type="password" {...register("password")} />
+                <Input
+                  autoComplete="current-password"
+                  id="password"
+                  type="password"
+                  {...register("password")}
+                />
                 <CardDescription className="text-red-500">
                   {formState.errors.password?.message}
                 </CardDescription>
