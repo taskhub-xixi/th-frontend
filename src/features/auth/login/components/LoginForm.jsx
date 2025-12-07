@@ -60,7 +60,7 @@ export function LoginForm({ className, ...props }) {
       // Redirect to dashboard
       router.push("/dashboard");
     } catch (error) {
-      // error handling
+      // Better error handling
       const status = error.response?.status;
       const message = error.response?.data?.message || "Terjadi kesalahan saat login";
 

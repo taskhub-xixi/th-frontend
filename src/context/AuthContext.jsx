@@ -15,7 +15,6 @@ export function AuthProvider({ children }) {
       return;
     }
 
-    // Check if user exists in localStorage
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       try {
@@ -30,38 +29,26 @@ export function AuthProvider({ children }) {
     setIsLoading(false);
   }, []);
 
-  /**
-   * Logout function
-   * Clear user state dan localStorage
-   * Cookie akan di-clear oleh backend
-   */
+
   const logout = () => {
     setUser(null);
 
-    // Clear user data dari localStorage
     if (typeof window !== "undefined") {
       localStorage.removeItem("user");
     }
   };
 
-  /**
-   * Login function
-   * Save user data (tapi BUKAN token!)
-   * Token ada di httpOnly cookie, browser yang manage
-   */
+
   const login = (userData) => {
     setUser(userData);
 
-    // Save user data untuk UX (profile, name, etc)
+
     if (typeof window !== "undefined") {
       localStorage.setItem("user", JSON.stringify(userData));
     }
   };
 
-  /**
-   * Update user function
-   * Untuk update profile, settings, etc
-   */
+
   const updateUser = (updates) => {
     const updatedUser = { ...user, ...updates };
     setUser(updatedUser);
