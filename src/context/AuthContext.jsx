@@ -1,12 +1,17 @@
 "use client";
-
+import { toast } from "sonner";
 import { createContext, useContext, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import apiClient from "@/lib/axios";
+import { clearCSRFToken } from "@/lib/csrf";
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
+  const router = useRouter();
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     // Only access localStorage in browser
@@ -20,8 +25,7 @@ export function AuthProvider({ children }) {
       try {
         const parsedUser = JSON.parse(storedUser);
         setUser(parsedUser);
-      } catch (error) {
-        console.error("Failed to parse user from localStorage:", error);
+      } catch (_error) {
         localStorage.removeItem("user");
       }
     }
@@ -29,25 +33,40 @@ export function AuthProvider({ children }) {
     setIsLoading(false);
   }, []);
 
+  const logout = async () => {
+    try {
+      // 1. Call logout API
+      await apiClient.post("/api/auth/logout");
 
-  const logout = () => {
-    setUser(null);
+      // 2. Clear state
+      setUser(null);
 
-    if (typeof window !== "undefined") {
+      // 3. Clear storage
       localStorage.removeItem("user");
+      localStorage.removeItem("csrfToken"); // atau sessionStorage
+
+      // 4. Redirect
+      router.push("/login");
+
+      // 5. Show toast (optional)
+      clearCSRFToken();
+      toast.success("Logged out successfully");
+    } catch (_error) {
+      // Even if API fails, still clear local state
+      setUser(null);
+      localStorage.clear();
+      clearCSRFToken();
+      router.push("/login");
     }
   };
 
-
   const login = (userData) => {
     setUser(userData);
-
 
     if (typeof window !== "undefined") {
       localStorage.setItem("user", JSON.stringify(userData));
     }
   };
-
 
   const updateUser = (updates) => {
     const updatedUser = { ...user, ...updates };

@@ -1,9 +1,11 @@
-'use client'
+"use client";
 
 import { useState, useEffect } from "react";
 
 export function generateCSRFToken() {
-  if (typeof window === "undefined") return null;
+  if (typeof window === "undefined") {
+    return null;
+  }
 
   const array = new Uint8Array(32);
   crypto.getRandomValues(array);
@@ -14,7 +16,9 @@ export function generateCSRFToken() {
  * Get CSRF token dari sessionStorage
  */
 export function getCSRFToken() {
-  if (typeof window === "undefined") return null;
+  if (typeof window === "undefined") {
+    return null;
+  }
   return sessionStorage.getItem("csrf_token");
 }
 
@@ -23,7 +27,9 @@ export function getCSRFToken() {
  * Biasanya dipanggil setelah login success
  */
 export function storeCSRFToken(token) {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined") {
+    return;
+  }
 
   // Jika token tidak provided, generate baru
   const csrfToken = token || generateCSRFToken();
@@ -36,7 +42,9 @@ export function storeCSRFToken(token) {
  * Dipanggil saat logout atau session expired
  */
 export function clearCSRFToken() {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined") {
+    return;
+  }
   sessionStorage.removeItem("csrf_token");
 }
 
@@ -45,7 +53,9 @@ export function clearCSRFToken() {
  * Panggil di app initialization atau setelah login
  */
 export async function initializeCSRF(apiClient) {
-  if (typeof window === "undefined") return null;
+  if (typeof window === "undefined") {
+    return null;
+  }
 
   try {
     // Request CSRF token dari backend
@@ -56,8 +66,7 @@ export async function initializeCSRF(apiClient) {
       storeCSRFToken(token);
       return token;
     }
-  } catch (error) {
-    console.error("Failed to initialize CSRF token:", error);
+  } catch (_error) {
     // Fallback: generate client-side
     return storeCSRFToken();
   }
