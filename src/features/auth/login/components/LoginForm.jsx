@@ -18,6 +18,7 @@ import { formSchemaLogin } from "@/features/auth/login/form/login";
 import apiClient from "@/lib/axios";
 import { cn } from "@/lib/utils";
 import { storeCSRFToken } from "@/lib/csrf";
+import { handleApiError } from "@/lib/errorHandler";
 
 export function LoginForm({ className, ...props }) {
   const router = useRouter();
@@ -39,7 +40,7 @@ export function LoginForm({ className, ...props }) {
 
     try {
       // Call login API
-      const response = await apiClient.post("api/auth/login", data);
+      const response = await apiClient.post("/api/auth/login", data);
 
       // Extract user and CSRF token from response
       const { user, csrfToken } = response.data;
@@ -49,8 +50,8 @@ export function LoginForm({ className, ...props }) {
         storeCSRFToken(csrfToken);
       }
 
-      // Update AuthContext dengan user data
-      // NO token storage! Cookie dihandle otomatis oleh browser
+      // Update AuthContext dengan full user profile data
+      // Backend now returns: { id, name, email, firstName, lastName, phone, bio, avatar }
       if (user) {
         login(user);
       }
@@ -60,29 +61,9 @@ export function LoginForm({ className, ...props }) {
       // Redirect to dashboard
       router.push("/dashboard");
     } catch (error) {
-      // Better error handling
-      const status = error.response?.status;
-      const message = error.response?.data?.message || "Terjadi kesalahan saat login";
-
-      if (status === 401) {
-        setAuthError("Email atau password salah");
-        toast.error("Email atau password salah");
-      } else if (status === 400) {
-        setAuthError(message);
-        toast.error(message);
-      } else if (status === 429) {
-        setAuthError("Terlalu banyak percobaan login. Coba lagi nanti.");
-        toast.error("Rate limit exceeded");
-      } else if (status >= 500) {
-        setAuthError("Server error, coba lagi nanti");
-        toast.error("Server error");
-      } else if (error.response) {
-        setAuthError(message);
-        toast.error(message);
-      } else {
-        setAuthError("Tidak dapat terhubung ke server");
-        toast.error("Periksa koneksi internet Anda");
-      }
+      const errorInfo = handleApiError(error);
+      setAuthError(errorInfo.message);
+      toast.error(errorInfo.toastMessage);
     } finally {
       setIsLoading(false);
     }
@@ -115,9 +96,9 @@ export function LoginForm({ className, ...props }) {
               <Field>
                 <div className="flex items-center">
                   <FieldLabel htmlFor="password">Password</FieldLabel>
-                  <a className="ml-auto text-sm underline-offset-4 hover:underline" href="#">
+                  <Link className="ml-auto text-sm underline-offset-4 hover:underline" href="">
                     Forgot your password?
-                  </a>
+                  </Link>
                 </div>
                 <Input
                   autoComplete="current-password"

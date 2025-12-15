@@ -14,11 +14,11 @@ import { Input } from "@/components/ui/input";
 import { formSchema } from "@/features/auth/register/form/register";
 import apiClient from "@/lib/axios";
 import { cn } from "@/lib/utils";
+import { handleApiError } from "@/lib/errorHandler";
 
 export function SignupForm({ className, ...props }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  // const [authError, setAuthError] = useState("");
 
   // resolver zodResolver
   const { formState, register, handleSubmit } = useForm({
@@ -34,22 +34,12 @@ export function SignupForm({ className, ...props }) {
   const signupUser = async (formData) => {
     setIsLoading(true);
     try {
-      await apiClient.post("api/auth/register", formData);
-      const { csrfToken } = response.data;
-      if (csrfToken) {
-        storeCSRFToken(csrfToken);
-      }
-
-      toast.success("Berhasil daftar");
-      router.push("/login");
+      const _response = await apiClient.post("/api/auth/register", formData);
       toast.success("Berhasil daftar");
       router.push("/login");
     } catch (error) {
-      const status = error.response?.status;
-      const message = error.response?.data?.message;
-      if (status === 400) {
-        toast.error(` Error : ${message}`);
-      }
+      const errorInfo = handleApiError(error, "Gagal mendaftar. Silakan coba lagi.");
+      toast.error(errorInfo.toastMessage);
     } finally {
       setIsLoading(false);
     }

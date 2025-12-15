@@ -15,7 +15,7 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     // Add CSRF token untuk non-GET requests
-    if (config.method !== "get") {
+    if (config.method?.toLowerCase() !== "get") {
       const csrfToken = getCSRFToken();
       if (csrfToken) {
         config.headers["X-CSRF-Token"] = csrfToken;
@@ -43,11 +43,13 @@ apiClient.interceptors.response.use(
   (error) => {
     // Handle network errors
     if (!error.response) {
-      console.error("Network Error:", error.message);
+      // Network error (e.g., no internet connection)
+      console.error("Network error:", error.message);
       return Promise.reject(error);
     }
 
     const status = error.response?.status;
+    const message = error.response?.data?.message;
 
     if (status === 401) {
       // Unauthorized - cookie expired or invalid
@@ -61,18 +63,13 @@ apiClient.interceptors.response.use(
       }
     } else if (status === 403) {
       // CSRF token invalid atau missing
-      const message = error.response?.data?.message;
       if (message?.toLowerCase().includes("csrf")) {
-        console.error("CSRF token validation failed");
-        // Refresh CSRF token
         clearCSRFToken();
-      } else {
-        console.error("Forbidden:", message);
       }
     } else if (status === 404) {
-      console.error("Endpoint not found:", error.config?.url);
+      console.error("Resource not found:", error.config.url);
     } else if (status >= 500) {
-      console.error("Server error:", error.response?.data?.message);
+      console.error("Server error:", status, message);
     }
 
     return Promise.reject(error);
