@@ -16,7 +16,7 @@ export async function debugAuthStatus() {
     
     // Check backend auth status
     try {
-      const response = await fetch("http://localhost:5000/api/debug/auth-status", {
+      const response = await fetch("https://taskhub-be.vercel.app/api/debug/auth-status", {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",

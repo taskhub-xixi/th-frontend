@@ -2,7 +2,7 @@ import axios from "axios";
 import { getCSRFToken, clearCSRFToken } from "./csrf";
 
 const apiClient = axios.create({
-  baseURL: "http://localhost:5000",
+  baseURL: "https://taskhub-be.vercel.app",
   headers: {
     "Content-Type": "application/json",
   },

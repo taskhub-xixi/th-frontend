@@ -7,7 +7,7 @@ import { User, Camera } from "lucide-react";
 const getAvatarUrl = (url) => {
   if (!url) return null;
   if (url.startsWith("http")) return url;
-  return `http://localhost:5000${url.startsWith("/") ? "" : "/"}${url}`;
+  return `https://taskhub-be.vercel.app${url.startsWith("/") ? "" : "/"}${url}`;
 };
 
 export default function AvatarUpload({ user, loading, handleAvatarChange, avatarPreview }) {

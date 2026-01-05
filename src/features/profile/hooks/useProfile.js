@@ -10,7 +10,7 @@ import { toast } from "sonner";
 const getAvatarUrl = (url) => {
   if (!url) return null;
   if (url.startsWith("http")) return url;
-  return `http://localhost:5000${url.startsWith("/") ? "" : "/"}${url}`;
+  return `https://taskhub-be.vercel.app${url.startsWith("/") ? "" : "/"}${url}`;
 };
 
 export function useProfile() {
@@ -127,7 +127,7 @@ export function useProfile() {
         if (avatarUrl) {
           // Ensure the avatar URL is properly formatted
           if (!avatarUrl.startsWith("http")) {
-            avatarUrl = `http://localhost:5000${avatarUrl.startsWith('/') ? '' : '/'}${avatarUrl}`;
+            avatarUrl = `https://taskhub-be.vercel.app${avatarUrl.startsWith('/') ? '' : '/'}${avatarUrl}`;
           }
 
           updateUser({ avatar: avatarUrl });
